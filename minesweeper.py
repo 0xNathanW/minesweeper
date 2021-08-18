@@ -5,8 +5,6 @@ import os
 
 class MineSweeper:
 
-    #   Probability of a cell being a mine.
-    p = 0.2
     #   Game state.
     finished = False
     #   Number of mines on board.
@@ -14,11 +12,12 @@ class MineSweeper:
 
     #   Construct an array from given grid parameters.
     #   Construct the user_grid that will be shown to player.
-    def __init__(self, grid_size):
+    def __init__(self, grid_size, probability):
         self.grid = np.array([[0 for i in range(grid_size[0])] for j in range(grid_size[1])])
         self.user_grid = np.array([[" " for i in range(grid_size[0])] for j in range(grid_size[1])])
         self.rows = grid_size[1]
         self.cols = grid_size[0]
+        self.p = probability
 
     #   Load grids with mines, temporarily are -99.
     #   Cells with mines add 1 to adjacent cells.
@@ -44,14 +43,20 @@ class MineSweeper:
 
     #   Print user_array in current state to terminal.
     def display_user(self):
-        print("%"*((8*self.cols)+3))
-        print("\t|\t" + "\t|\t".join([str(i) for i in range(1, self.cols + 1)]))
-        print("_"*((8*self.cols)+3))
+        grid_width = 6 * self.cols + 5
+        print("%"*grid_width)
+        print("   |  " + "  |  ".join([str(i) for i in range(1, self.cols + 1) if i < 10]) + "  | " +
+              "  | ".join([str(i) for i in range(1, self.cols + 1) if i >= 10]) +
+              ("  |" if self.cols>10 else ""))
+        print("_"*grid_width)
         for row_num, row in enumerate(self.user_grid):
             if row_num != 0:
-                print("-"*((8*self.cols)+3))
-            print(str(row_num+1) + "\t|\t" + "\t|\t".join([cell for cell in row]))
-        print("%" * ((8 * self.cols) + 3))
+                print("-"*grid_width)
+            if row_num < 9:
+                print(str(row_num+1) + "  |  " + "  |  ".join([cell for cell in row]) + "  |")
+            elif row_num >= 9:
+                print(str(row_num+1) + " |  " + "  |  ".join([cell for cell in row]) + "  |")
+        print("%"*grid_width)
         print("\n")
 
     #   Flag action, replaces cell in user_grid with "F"
@@ -129,44 +134,48 @@ class MineSweeper:
             self.play_again()
 
     def user_move(self):
-        valid_actions = ["F", "R"]
-        valid = True
-        user_input = input("Next move: ")
-        arr = [char for char in user_input]
-        if len(arr) != 3 or arr[2].upper() not in valid_actions:
-            valid = False
+        user_input = input("Next move...")
+        if user_input.lower() == "quit":
+            quit()
+        if user_input.lower() == "reset":
+            main()
+        def invalid():
+            print("Not a valid move, try again.")
+            self.user_move()
+        if user_input.count(",") != 2:
+            return invalid()
+        arr = user_input.split(",")
+        arr = [x.strip() for x in arr]
         try:
             x, y, action = int(arr[0]) - 1, int(arr[1]) - 1, arr[2].upper()
-            if x + 1 > self.cols or y + 1 > self.rows:
-                valid = False
+            if x + 1 <= self.cols or y + 1 <= self.rows:
+                if action == "R":
+                    self.reveal(x, y)
+                elif action == "F":
+                    self.flag(x, y)
+                else:
+                    print("Invalid action.")
+                    return invalid()
+            else:
+                print("Selected cell not on board.")
+                return invalid()
         except (ValueError, IndexError):
-            valid = False
-        if valid:
-            if action == "F":
-                self.flag(x, y)
-            if action == "R":
-                self.reveal(x, y)
-
-            self.check_win()
-        else:
-            print("Not a valid move. Try again.")
-            self.user_move()
+            return invalid()
 
 #   Retrieve grid size.
 def query_difficulty():
-    difficulty_to_grid_size = {"easy": (5, 5), "medium": (10, 8), "hard": (18, 14)}
+    difficulty_to_grid_size = {"easy": ((6, 6), 0.15), "medium": ((10, 10), 0.2), "hard": ((18, 18), 0.25)}
     user_choice = input("Choose a difficulty: easy, medium, or hard...").lower()
     if user_choice in difficulty_to_grid_size.keys():
-        print(difficulty_to_grid_size[user_choice])
-        return difficulty_to_grid_size[user_choice]
+        return difficulty_to_grid_size[user_choice][0], difficulty_to_grid_size[user_choice][1]
     else:
         print("Invalid choice, please type easy, medium or hard.")
         return query_difficulty()
 
 
 def main():
-    grid_size = query_difficulty()
-    game = MineSweeper(grid_size)
+    grid_size, probability = query_difficulty()
+    game = MineSweeper(grid_size=grid_size, probability=probability)
     game.init_game()
     game.display_user()
     while game.finished is False:
@@ -191,10 +200,11 @@ How to play:
     - Flagged cells are denoted by "F".
     
 IMPORTANT:
-    - To make your move you type 3 charactors:
+    - To make your move you type 3 characters:
         1. the x coordinate (shown at top of grid)
         2. the y coordinate (shown to left of grid)
         3. Either "R" to reveal, or "F" to flag.
+    - Type "reset" at anytime to reset, or "quit" to exit
         
     - You lose the game if you reveal a mine.
     - You win the game by correctly flagging all mines.
@@ -203,6 +213,7 @@ IMPORTANT:
 
     main()
 
-# TODO: Adjust probability of mines
-# TODO: Add option to reset when asked for move
-# TODO: Allow to select already revealed and reveal all if correct numb of mines
+
+# TODO: Allow to select already revealed and reveal all if correct num of mines
+# TODO: Allow ability to chain moves together (be sure to branch this variation)
+# TODO: Allow to add custom grid
