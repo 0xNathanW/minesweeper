@@ -1,12 +1,12 @@
 import numpy as np
 import random
-import os
 
 
 class MineSweeper:
 
     #   Game state.
     finished = False
+
     #   Number of mines on board.
     mine_count = 0
 
@@ -21,7 +21,7 @@ class MineSweeper:
 
     #   Load grids with mines, temporarily are -99.
     #   Cells with mines add 1 to adjacent cells.
-    #   Reformat numerical array to strings.
+    #   Reformat numerical grid to grid with symbols.
     def init_game(self):
         for y in range(self.rows):
             for x in range(self.cols):
@@ -67,27 +67,27 @@ class MineSweeper:
             self.user_grid[y][x] = ">"
 
     #   Reveal action, set cell in user_grid to equivalent cell in grid.
+    #   If cell revealed twice, check if correct number of mines have been flagged
+    #   and reveal all adjacent cells.
+    #   If cell is "0", recursively call function on neighbouring cells also containing
+    #   "0" until they are all revealed.
     def reveal(self, x, y):
-        self.user_grid[y][x] = self.grid[y][x]
-        #   If cell is mine, lose game.
-        if self.user_grid[y][x] == "X":
-            self.game_lost()
-        #   If cell has 0 adjacent mines, reveal all surrounding cells.
-        #   Furthermore if adjacent cells are also 0, recursively reveal them until
-        #   no more 0 cells are adjacent.
-        elif self.user_grid[y][x] == "0":
-            adj_not_revealed = 0
-            for i in range(-1, 2):
+        print("value:", self.grid[x][y])
+        #   Case when user calls reveal on already revealed cell.
+        if self.user_grid[y][x] == self.grid[y][x] and self.grid[y][x] != "0":
+            flags_adj = 0
+            for i in range(-1, 2):          # > loop used frequently to traverse adjacent cells.
                 for j in range(-1, 2):
                     try:
                         if (y + i) >= 0 and (x + j) >= 0:
                             if i != 0 or j != 0:
-                                if self.user_grid[y+i][x+j] == "█":
-                                    adj_not_revealed += 1
-                                    self.user_grid[y+i][x+j] = self.grid[y+i][x+j]
+                                if self.user_grid[y + i][x + j] == ">":
+                                    flags_adj += 1
                     except IndexError:
                         pass
-            if adj_not_revealed > 0:
+            #   Checks if num of adjacent flags is equal to that of digit in cell.
+            if flags_adj == int(self.user_grid[y][x]):
+                print("Correct num of flags")
                 for i in range(-1, 2):
                     for j in range(-1, 2):
                         try:
@@ -95,12 +95,48 @@ class MineSweeper:
                                 if i != 0 or j != 0:
                                     if self.grid[y+i][x+j] == "0":
                                         self.reveal((x+j), (y+i))
+                                    elif self.grid[y+i][x+j] == "X":
+                                        pass
                                     else:
+                                        self.user_grid[y + i][x + j] = self.grid[y + i][x + j]
+                        except IndexError:
+                            pass
+            else:
+                print("All mines have not been flagged.")
+
+        else:
+            self.user_grid[y][x] = self.grid[y][x]
+            #   If cell is mine, lose game.
+            if self.user_grid[y][x] == "X":
+                self.game_lost()
+            #   Case of cell containing "0".
+            elif self.user_grid[y][x] == "0":
+                adj_not_revealed = 0
+                for i in range(-1, 2):
+                    for j in range(-1, 2):
+                        try:
+                            if (y + i) >= 0 and (x + j) >= 0:
+                                if i != 0 or j != 0:
+                                    if self.user_grid[y+i][x+j] == "█":
+                                        adj_not_revealed += 1
                                         self.user_grid[y+i][x+j] = self.grid[y+i][x+j]
                         except IndexError:
                             pass
-        else:
-            pass
+                #   Checks to see if all adjacent cells already revealed, prevents infinite-recursion.
+                if adj_not_revealed > 0:
+                    for i in range(-1, 2):
+                        for j in range(-1, 2):
+                            try:
+                                if (y + i) >= 0 and (x + j) >= 0:
+                                    if i != 0 or j != 0:
+                                        if self.grid[y+i][x+j] == "0":
+                                            self.reveal((x+j), (y+i))
+                                        else:
+                                            self.user_grid[y+i][x+j] = self.grid[y+i][x+j]
+                            except IndexError:
+                                pass
+            else:
+                pass
 
     def play_again(self):
         again = input("Play again? (Y/N)").upper()
@@ -120,8 +156,10 @@ class MineSweeper:
                 if self.grid[y][x] == "X":
                     self.user_grid[y][x] = "X"
         self.display_user()
+        print("Unlucky pal.")
         self.play_again()
 
+    #   Check for win condition after every move.
     def check_win(self):
         successful_flags = 0
         for y in range(self.rows):
@@ -133,6 +171,7 @@ class MineSweeper:
             print("Congrats, you won!!! You're prize is ... absolutely nothing.")
             self.play_again()
 
+    #   Input move from user.
     def user_move(self):
         user_input = input("Next move...")
         if user_input.lower() == "quit":
@@ -162,7 +201,7 @@ class MineSweeper:
         except (ValueError, IndexError):
             return invalid()
 
-#   Retrieve grid size.
+#   Retrieve grid-size and probability.
 def query_difficulty():
     difficulty_to_grid_size = {"easy": ((6, 6), 0.15), "medium": ((10, 10), 0.2), "hard": ((18, 18), 0.25)}
     user_choice = input("Choose a difficulty: easy, medium, or hard...").lower()
@@ -177,46 +216,58 @@ def main():
     grid_size, probability = query_difficulty()
     game = MineSweeper(grid_size=grid_size, probability=probability)
     game.init_game()
+    print(game.grid)
     game.display_user()
     while game.finished is False:
         game.user_move()
         game.display_user()
+        game.check_win()
 
 
 if __name__ == "__main__":
 
     print("""
-    ███╗   ███╗██╗███╗   ██╗███████╗███████╗██╗    ██╗███████╗███████╗██████╗ ███████╗██████╗ 
-    ████╗ ████║██║████╗  ██║██╔════╝██╔════╝██║    ██║██╔════╝██╔════╝██╔══██╗██╔════╝██╔══██╗
-    ██╔████╔██║██║██╔██╗ ██║█████╗  ███████╗██║ █╗ ██║█████╗  █████╗  ██████╔╝█████╗  ██████╔╝
-    ██║╚██╔╝██║██║██║╚██╗██║██╔══╝  ╚════██║██║███╗██║██╔══╝  ██╔══╝  ██╔═══╝ ██╔══╝  ██╔══██╗
-    ██║ ╚═╝ ██║██║██║ ╚████║███████╗███████║╚███╔███╔╝███████╗███████╗██║     ███████╗██║  ██║
-    ╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝     ╚══════╝╚═╝  ╚═╝
-                                                                                          
+    
+    **************************************************************
+    Welcome to:
+    ___  ___                                                   
+    |  \/  (_)                                                  
+    | .  . |_ _ __   ___  _____      _____  ___ _ __   ___ _ __ 
+    | |\/| | | '_ \ / _ \/ __\ \ /\ / / _ \/ _ \ '_ \ / _ \ '__|
+    | |  | | | | | |  __/\__ \\ V  V /  __/  __/ |_) |  __/ |   
+    \_|  |_/_|_| |_|\___||___/ \_/\_/ \___|\___| .__/ \___|_|   
+                                               | |              
+                                               |_|              
+    
+    **************************************************************
+                                                                                      
     How to play:
         - Select a level of difficulty.
         - The board starts completely concealed.
-        - The board is randomly scattered with mines, denoted by "X".
-        - Cells without mines contain a number which shows the number of mines in adjacent cells.
+        - The board is randomly scattered with hidden mines, denoted by "X".
+        - Cells without mines contain a digit which shows the number of mines in adjacent cells.
         
         - You have the option to either reveal cells, or flag them if you think they are a mine.
         - Flagged cells are denoted by ">".
         
     IMPORTANT:
-        - To make your move you type 3 characters:
-            1. the x coordinate (shown at top of grid)
-            2. the y coordinate (shown to left of grid)
+        - To make your move you type 3 characters separated by commas:
+            1. the x coordinate (shown at top of grid).
+            2. the y coordinate (shown to left of grid).
             3. Either "R" to reveal, or "F" to flag.
-        - Type "reset" at anytime to reset, or "quit" to exit
+            
+            EXAMPLE:"3,4,R" - reveals cell at coords (3 ,4).
+                    "2,2,F" - flags cell at coords (2,2).        
+            
+        - If you believe you have flagged all adjacent mines, reveal the cell again to reveal
+        other adjacent cells.
+        - Cells containing 0 will automatically have adjacent cells revealed.
+        
+        - Type "reset" at anytime to reset the game, or "quit" to exit completely.
             
         - You lose the game if you reveal a mine.
-        - You win the game by correctly flagging all mines.
+        - You win the game by correctly flagging all mines on the board.
     
 """)
 
     main()
-
-
-# TODO: Allow to select already revealed and reveal all if correct num of mines
-# TODO: Allow ability to chain moves together (be sure to branch this variation)
-# TODO: Allow to add custom grid
