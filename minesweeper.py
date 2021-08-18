@@ -217,7 +217,6 @@ def main():
     game = MineSweeper(grid_size=grid_size, probability=probability)
     game.init_game()
     game.display_user()
-    print(game.grid)
     while game.finished is False:
         game.user_move()
         game.display_user()
