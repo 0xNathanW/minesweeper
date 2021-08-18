@@ -216,7 +216,6 @@ def main():
     grid_size, probability = query_difficulty()
     game = MineSweeper(grid_size=grid_size, probability=probability)
     game.init_game()
-    print(game.grid)
     game.display_user()
     while game.finished is False:
         game.user_move()
