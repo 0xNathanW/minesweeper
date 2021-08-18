@@ -72,7 +72,6 @@ class MineSweeper:
     #   If cell is "0", recursively call function on neighbouring cells also containing
     #   "0" until they are all revealed.
     def reveal(self, x, y):
-        print("value:", self.grid[x][y])
         #   Case when user calls reveal on already revealed cell.
         if self.user_grid[y][x] == self.grid[y][x] and self.grid[y][x] != "0":
             flags_adj = 0
@@ -87,7 +86,6 @@ class MineSweeper:
                         pass
             #   Checks if num of adjacent flags is equal to that of digit in cell.
             if flags_adj == int(self.user_grid[y][x]):
-                print("Correct num of flags")
                 for i in range(-1, 2):
                     for j in range(-1, 2):
                         try:
@@ -95,14 +93,16 @@ class MineSweeper:
                                 if i != 0 or j != 0:
                                     if self.grid[y+i][x+j] == "0":
                                         self.reveal((x+j), (y+i))
-                                    elif self.grid[y+i][x+j] == "X":
+                                    elif self.grid[y+i][x+j] == "X" and self.user_grid[y+i][x+j] == ">":
                                         pass
+                                    elif self.grid[y+i][x+j] == "X" and self.user_grid[y+i][x+j] != ">":
+                                        self.game_lost()
                                     else:
-                                        self.user_grid[y + i][x + j] = self.grid[y + i][x + j]
+                                        self.user_grid[y+i][x+j] = self.grid[y+i][x+j]
                         except IndexError:
                             pass
             else:
-                print("All mines have not been flagged.")
+                print("Not all mines have been flagged.")
 
         else:
             self.user_grid[y][x] = self.grid[y][x]
@@ -217,6 +217,7 @@ def main():
     game = MineSweeper(grid_size=grid_size, probability=probability)
     game.init_game()
     game.display_user()
+    print(game.grid)
     while game.finished is False:
         game.user_move()
         game.display_user()
