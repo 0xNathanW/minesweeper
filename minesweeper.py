@@ -14,7 +14,7 @@ class MineSweeper:
     #   Construct the user_grid that will be shown to player.
     def __init__(self, grid_size, probability):
         self.grid = np.array([[0 for i in range(grid_size[0])] for j in range(grid_size[1])])
-        self.user_grid = np.array([[" " for i in range(grid_size[0])] for j in range(grid_size[1])])
+        self.user_grid = np.array([["█" for i in range(grid_size[0])] for j in range(grid_size[1])])
         self.rows = grid_size[1]
         self.cols = grid_size[0]
         self.p = probability
@@ -61,10 +61,10 @@ class MineSweeper:
 
     #   Flag action, replaces cell in user_grid with "F"
     def flag(self, x, y):
-        if self.user_grid[y][x] == "F":
+        if self.user_grid[y][x] == ">":
             print("This cell has already been flagged.\n")
         else:
-            self.user_grid[y][x] = "F"
+            self.user_grid[y][x] = ">"
 
     #   Reveal action, set cell in user_grid to equivalent cell in grid.
     def reveal(self, x, y):
@@ -82,7 +82,7 @@ class MineSweeper:
                     try:
                         if (y + i) >= 0 and (x + j) >= 0:
                             if i != 0 or j != 0:
-                                if self.user_grid[y+i][x+j] == " ":
+                                if self.user_grid[y+i][x+j] == "█":
                                     adj_not_revealed += 1
                                     self.user_grid[y+i][x+j] = self.grid[y+i][x+j]
                     except IndexError:
@@ -126,7 +126,7 @@ class MineSweeper:
         successful_flags = 0
         for y in range(self.rows):
             for x in range(self.cols):
-                if self.user_grid[y][x] == "F" and self.grid[y][x] == "X":
+                if self.user_grid[y][x] == ">" and self.grid[y][x] == "X":
                     successful_flags += 1
         if successful_flags == self.mine_count:
             self.finished = True
@@ -186,28 +186,31 @@ def main():
 if __name__ == "__main__":
 
     print("""
-            *******************************
-                Welcome to Minesweeper
-            *******************************
-
-How to play:
-    - Select a level of difficulty.
-    - The board starts completely concealed.
-    - The board is randomly scattered with mines, denoted by "X".
-    - Cells without mines contain a number which shows the number of mines in adjacent cells.
-    
-    - You have the option to either reveal cells, or flag them if you think they are a mine.
-    - Flagged cells are denoted by "F".
-    
-IMPORTANT:
-    - To make your move you type 3 characters:
-        1. the x coordinate (shown at top of grid)
-        2. the y coordinate (shown to left of grid)
-        3. Either "R" to reveal, or "F" to flag.
-    - Type "reset" at anytime to reset, or "quit" to exit
+    ███╗   ███╗██╗███╗   ██╗███████╗███████╗██╗    ██╗███████╗███████╗██████╗ ███████╗██████╗ 
+    ████╗ ████║██║████╗  ██║██╔════╝██╔════╝██║    ██║██╔════╝██╔════╝██╔══██╗██╔════╝██╔══██╗
+    ██╔████╔██║██║██╔██╗ ██║█████╗  ███████╗██║ █╗ ██║█████╗  █████╗  ██████╔╝█████╗  ██████╔╝
+    ██║╚██╔╝██║██║██║╚██╗██║██╔══╝  ╚════██║██║███╗██║██╔══╝  ██╔══╝  ██╔═══╝ ██╔══╝  ██╔══██╗
+    ██║ ╚═╝ ██║██║██║ ╚████║███████╗███████║╚███╔███╔╝███████╗███████╗██║     ███████╗██║  ██║
+    ╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝ ╚══╝╚══╝ ╚══════╝╚══════╝╚═╝     ╚══════╝╚═╝  ╚═╝
+                                                                                          
+    How to play:
+        - Select a level of difficulty.
+        - The board starts completely concealed.
+        - The board is randomly scattered with mines, denoted by "X".
+        - Cells without mines contain a number which shows the number of mines in adjacent cells.
         
-    - You lose the game if you reveal a mine.
-    - You win the game by correctly flagging all mines.
+        - You have the option to either reveal cells, or flag them if you think they are a mine.
+        - Flagged cells are denoted by ">".
+        
+    IMPORTANT:
+        - To make your move you type 3 characters:
+            1. the x coordinate (shown at top of grid)
+            2. the y coordinate (shown to left of grid)
+            3. Either "R" to reveal, or "F" to flag.
+        - Type "reset" at anytime to reset, or "quit" to exit
+            
+        - You lose the game if you reveal a mine.
+        - You win the game by correctly flagging all mines.
     
 """)
 
