@@ -63,6 +63,8 @@ class MineSweeper:
     def flag(self, x, y):
         if self.user_grid[y][x] == ">":
             print("This cell has already been flagged.\n")
+        elif self.user_grid[y][x] == self.grid[y][x]:
+            print("This cell has already been revealed\n")
         else:
             self.user_grid[y][x] = ">"
 
@@ -203,7 +205,7 @@ class MineSweeper:
 
 #   Retrieve grid-size and probability.
 def query_difficulty():
-    difficulty_to_grid_size = {"easy": ((6, 6), 0.15), "medium": ((10, 10), 0.2), "hard": ((18, 18), 0.25)}
+    difficulty_to_grid_size = {"easy": ((6, 6), 0.2), "medium": ((10, 10), 0.25), "hard": ((18, 18), 0.3)}
     user_choice = input("Choose a difficulty: easy, medium, or hard...").lower()
     if user_choice in difficulty_to_grid_size.keys():
         return difficulty_to_grid_size[user_choice][0], difficulty_to_grid_size[user_choice][1]
