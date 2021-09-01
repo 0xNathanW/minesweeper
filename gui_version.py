@@ -1,10 +1,27 @@
-from tkinter import *
+import tkinter as tk
 from tkinter import ttk
 import tkinter.font as font
 import numpy as np
 import random
+import platform
 
-class Menu:
+class Window(tk.Tk):
+
+    def __init__(self):
+        tk.Tk.__init__(self)
+        self.title("Minesweeper")
+        self._frame = None
+        self.switch_frame(Menu)
+
+    def switch_frame(self, FrameName, *args):
+        next = FrameName(self) if not args else FrameName(self, args[0], args[1])
+        if self._frame is not None:
+            self._frame.destroy()
+        self._frame = next
+        self._frame.pack()
+
+
+class Menu(tk.Frame):
 
     intro_text = """
     **************************************************************
@@ -31,95 +48,43 @@ class Menu:
         - You win the game by correctly flagging all mines on the board.\n
 """
 
-    def __init__(self, window):
-        self.menu_frame = ttk.Frame(window)
-        self.menu_frame.pack()
-
-    def button_command(self, difficulty):
-        difficulty_dict = {"easy": ((9, 9), 10), "medium": ((16, 16), 40), "hard": ((30, 16), 99)}
-        global grid_size, number_of_mines
-        grid_size, number_of_mines = difficulty_dict[difficulty][0], difficulty_dict[difficulty][1]
-        self.menu_frame.destroy()
-        print(difficulty_dict[difficulty])
-
-
-    def develop_menu(self):
+    def __init__(self, master):
+        tk.Frame.__init__(self, master)
+        introTextFont = font.Font(size=12)
+        intro = tk.Label(self, text=self.intro_text, justify="left")
+        intro["font"] = introTextFont
+        intro.pack()
         buttonFont = font.Font(size=20, weight="bold")
-        Label(self.menu_frame, text=self.intro_text, justify=LEFT).pack()
-        levels = {"Easy": ["green", lambda: self.button_command("easy")],
-                   "Medium": ["blue", lambda: self.button_command("medium")],
-                   "Hard": ["red", lambda: self.button_command("hard")],
-                   "Quit": ["black", lambda: exit()]}
+        levels = {"Easy": ["green", lambda: master.switch_frame(MineSweeper, (9, 9), 10)],
+                  "Medium": ["blue", lambda: master.switch_frame(MineSweeper, (16, 16), 40)],
+                  "Hard": ["red", lambda: master.switch_frame(MineSweeper, (30, 16), 99)],
+                  "Quit": ["black", lambda: exit()]}
         for level in levels:
-            button = Button(self.menu_frame,
-                                text=level,
-                                width=20,
-                                fg=levels[level][0],
-                                justify=CENTER,
-                                command=levels[level][1])
+            button = tk.Button(self,
+                            text=level,
+                            width=20,
+                            fg=levels[level][0],
+                            command=levels[level][1])
             button["font"] = buttonFont
             button.pack()
-        Label(self.menu_frame, text="\n\n").pack()
-
-    def clear_window(self):
-        self.menu_frame.destroy()
+        tk.Label(self, text="\n\n").pack()
 
 
-class MineSweeper:
+class MineSweeper(tk.Frame):
 
-    def __init__(self, window, grid_size, number_of_mines):
-        self.frame = Frame(window)
-        self.frame.pack()
-        self.rows = grid_size[1]
+    def __init__(self, master, grid_size, mines):
+        tk.Frame.__init__(self, master)
         self.cols = grid_size[0]
-        self.mines = number_of_mines
-        self.reference_grid = np.array([[0 for i in range(grid_size[0])] for j in range(grid_size[1])])
-
-    def init_reference_grid(self):
+        self.rows = grid_size[1]
+        self.mines = mines
+        tk.Label(self, text=f"Cols: {self.cols}, Rows: {self.rows}, Mines: {self.mines}.  You fuckign god.").pack()
         mine_coords = set()
         while len(mine_coords) < self.mines:
             mine_coords.add((random.randint(0, self.rows - 1), random.randint(0, self.cols - 1)))
         print(mine_coords)
-        for y, x in mine_coords:
-            self.reference_grid[y][x] = -99
-            for i in range(-1, 2):
-                for j in range(-1, 2):
-                    try:
-                        if (y + i) >= 0 and (x + j) >= 0:
-                            self.reference_grid[y + i][x + j] += 1
-                    except IndexError:
-                        pass
-        display = np.zeros(self.reference_grid.shape, dtype="str")
-        for y in range(self.rows):
-            for x in range(self.cols):
-                display[y][x] = "X" if self.reference_grid[y][x] < -50 else str(self.reference_grid[y][x])
-        self.reference_grid = display
 
-    def gui_setup(self):
-        for x in range(self.cols):
-            for y in range(self.cols):
-                cell  = Button(self.frame, text=" ")
-                cell.grid(column=x, row=y)
-
-
-
-
-
-def create_window():
-    window = Tk()
-    window.title("MineSweeper")
-    return window
-
-grid_size = None
-number_of_mines = None
-
-window = create_window()
-menu = Menu(window)
-difficulty = menu.develop_menu()
-game = MineSweeper(window=window, grid_size=(10,10), number_of_mines=10)
-
-
-window.mainloop()
+main = Window()
+main.mainloop()
 
 
 
