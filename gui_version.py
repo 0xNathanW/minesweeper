@@ -1,8 +1,9 @@
 from tkinter import *
 from tkinter import ttk
 import tkinter.font as font
+import numpy as np
+import random
 
-test
 class Menu:
 
     intro_text = """
@@ -27,36 +28,98 @@ class Menu:
         - Type "reset" at anytime to reset the game, or "quit" to exit completely.
             
         - You lose the game if you reveal a mine.
-        - You win the game by correctly flagging all mines on the board.
+        - You win the game by correctly flagging all mines on the board.\n
 """
 
-    def __init__(self, root):
-        self.menu_frame = ttk.Frame(root).pack()
+    def __init__(self, window):
+        self.menu_frame = ttk.Frame(window)
+        self.menu_frame.pack()
 
-    def insert_menu_widgets(self):
-        buttonFont = font.Font(size=20)
+    def button_command(self, difficulty):
+        difficulty_dict = {"easy": ((9, 9), 10), "medium": ((16, 16), 40), "hard": ((30, 16), 99)}
+        global grid_size, number_of_mines
+        grid_size, number_of_mines = difficulty_dict[difficulty][0], difficulty_dict[difficulty][1]
+        self.menu_frame.destroy()
+        print(difficulty_dict[difficulty])
+
+
+    def develop_menu(self):
+        buttonFont = font.Font(size=20, weight="bold")
         Label(self.menu_frame, text=self.intro_text, justify=LEFT).pack()
-        easy = Button(self.menu_frame, text="Easy", padx=50, fg="green", justify=CENTER)
-        easy["font"] = buttonFont
-        easy.pack()
-        intermediate = Button(self.menu_frame, text="Intermediate", padx=15.5, fg="blue", justify=CENTER)
-        intermediate["font"] = buttonFont
-        intermediate.pack()
-        hard = Button(self.menu_frame, text="Hard", padx=50, fg="red", justify=CENTER)
-        hard["font"] = buttonFont
-        hard.pack()
+        levels = {"Easy": ["green", lambda: self.button_command("easy")],
+                   "Medium": ["blue", lambda: self.button_command("medium")],
+                   "Hard": ["red", lambda: self.button_command("hard")],
+                   "Quit": ["black", lambda: exit()]}
+        for level in levels:
+            button = Button(self.menu_frame,
+                                text=level,
+                                width=20,
+                                fg=levels[level][0],
+                                justify=CENTER,
+                                command=levels[level][1])
+            button["font"] = buttonFont
+            button.pack()
         Label(self.menu_frame, text="\n\n").pack()
 
-def create_root():
-    root = Tk()
-    root.title("MineSweeper")
-    return root
+    def clear_window(self):
+        self.menu_frame.destroy()
 
-root = create_root()
-menu = Menu(root)
-menu.insert_menu_widgets()
 
-root.mainloop()
+class MineSweeper:
+
+    def __init__(self, window, grid_size, number_of_mines):
+        self.frame = Frame(window)
+        self.frame.pack()
+        self.rows = grid_size[1]
+        self.cols = grid_size[0]
+        self.mines = number_of_mines
+        self.reference_grid = np.array([[0 for i in range(grid_size[0])] for j in range(grid_size[1])])
+
+    def init_reference_grid(self):
+        mine_coords = set()
+        while len(mine_coords) < self.mines:
+            mine_coords.add((random.randint(0, self.rows - 1), random.randint(0, self.cols - 1)))
+        print(mine_coords)
+        for y, x in mine_coords:
+            self.reference_grid[y][x] = -99
+            for i in range(-1, 2):
+                for j in range(-1, 2):
+                    try:
+                        if (y + i) >= 0 and (x + j) >= 0:
+                            self.reference_grid[y + i][x + j] += 1
+                    except IndexError:
+                        pass
+        display = np.zeros(self.reference_grid.shape, dtype="str")
+        for y in range(self.rows):
+            for x in range(self.cols):
+                display[y][x] = "X" if self.reference_grid[y][x] < -50 else str(self.reference_grid[y][x])
+        self.reference_grid = display
+
+    def gui_setup(self):
+        for x in range(self.cols):
+            for y in range(self.cols):
+                cell  = Button(self.frame, text=" ")
+                cell.grid(column=x, row=y)
+
+
+
+
+
+def create_window():
+    window = Tk()
+    window.title("MineSweeper")
+    return window
+
+grid_size = None
+number_of_mines = None
+
+window = create_window()
+menu = Menu(window)
+difficulty = menu.develop_menu()
+game = MineSweeper(window=window, grid_size=(10,10), number_of_mines=10)
+
+
+window.mainloop()
 
 
 

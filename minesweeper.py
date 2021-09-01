@@ -12,29 +12,31 @@ class MineSweeper:
 
     #   Construct an array from given grid parameters.
     #   Construct the user_grid that will be shown to player.
-    def __init__(self, grid_size, probability):
+    def __init__(self, grid_size, mines):
         self.grid = np.array([[0 for i in range(grid_size[0])] for j in range(grid_size[1])])
         self.user_grid = np.array([["█" for i in range(grid_size[0])] for j in range(grid_size[1])])
         self.rows = grid_size[1]
         self.cols = grid_size[0]
-        self.p = probability
+        self.mines = mines
 
     #   Load grids with mines, temporarily are -99.
     #   Cells with mines add 1 to adjacent cells.
     #   Reformat numerical grid to grid with symbols.
     def init_game(self):
-        for y in range(self.rows):
-            for x in range(self.cols):
-                if random.random() < self.p:
-                    self.grid[y][x] = -99
-                    self.mine_count += 1
-                    for i in range(-1, 2):
-                        for j in range(-1, 2):
-                            try:
-                                if (y+i) >= 0 and (x+j) >= 0:
-                                    self.grid[y+i][x+j] += 1
-                            except IndexError:
-                                pass
+
+        mine_coords = set()
+        while len(mine_coords) < self.mines:
+            mine_coords.add((random.randint(0, self.rows - 1), random.randint(0, self.cols - 1)))
+        print(mine_coords)
+        for y, x in mine_coords:
+            self.grid[y][x] = -99
+            for i in range(-1, 2):
+                for j in range(-1, 2):
+                    try:
+                        if (y+i) >= 0 and (x+j) >= 0:
+                            self.grid[y+i][x+j] += 1
+                    except IndexError:
+                        pass
         display = np.zeros(self.grid.shape, dtype="str")
         for y in range(self.rows):
             for x in range(self.cols):
@@ -205,7 +207,7 @@ class MineSweeper:
 
 #   Retrieve grid-size and probability.
 def query_difficulty():
-    difficulty_to_grid_size = {"easy": ((6, 6), 0.2), "medium": ((10, 10), 0.25), "hard": ((18, 18), 0.3)}
+    difficulty_to_grid_size = {"easy": ((6, 6), 7), "medium": ((10, 10), 25), "hard": ((18, 18), 97)}
     user_choice = input("Choose a difficulty: easy, medium, or hard...").lower()
     if user_choice in difficulty_to_grid_size.keys():
         return difficulty_to_grid_size[user_choice][0], difficulty_to_grid_size[user_choice][1]
@@ -215,8 +217,8 @@ def query_difficulty():
 
 
 def main():
-    grid_size, probability = query_difficulty()
-    game = MineSweeper(grid_size=grid_size, probability=probability)
+    grid_size, mines = query_difficulty()
+    game = MineSweeper(grid_size=grid_size, mines=mines)
     game.init_game()
     game.display_user()
     while game.finished is False:
