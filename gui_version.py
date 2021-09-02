@@ -155,11 +155,15 @@ class MineSweeper(tk.Frame):
                     mine = tk.Label(self.cell_subframe, text="X", height=2, width=5, bg="red", relief="sunken")
                     mine.grid(row=y, column=x)
 
-
-
-
     def game_won(self):
         pass
+
+
+class GameOver(tk.Frame):
+
+    def __init__(self, state):
+        tk.Frame.__init__(master)
+        tk.Frame.
 
 main = Window()
 main.mainloop()
