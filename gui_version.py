@@ -12,8 +12,14 @@ class Window(tk.Tk):
         self._frame = None
         self.switch_frame(Menu)
 
-    def switch_frame(self, FrameName, *args):
-        next = FrameName(self) if not args else FrameName(self, args[0], args[1])
+    def switch_frame(self, FrameName, **kwargs):
+        if FrameName == Menu:
+            next = FrameName(self)
+        if FrameName == MineSweeper:
+            next = FrameName(self, kwargs.get("grid_size"), kwargs.get("mines"))
+        if FrameName == GameOver:
+            next = FrameName(self, kwargs.get("state"))
+
         if self._frame is not None:
             self._frame.destroy()
         self._frame = next
@@ -54,9 +60,9 @@ class Menu(tk.Frame):
         intro["font"] = introTextFont
         intro.pack()
         buttonFont = font.Font(size=20, weight="bold")
-        levels = {"Easy": ["green", lambda: master.switch_frame(MineSweeper, (9, 9), 10)],
-                  "Medium": ["blue", lambda: master.switch_frame(MineSweeper, (16, 16), 40)],
-                  "Hard": ["red", lambda: master.switch_frame(MineSweeper, (30, 16), 99)],
+        levels = {"Easy": ["green", lambda: master.switch_frame(MineSweeper, grid_size=(9, 9), mines=10)],
+                  "Medium": ["blue", lambda: master.switch_frame(MineSweeper, grid_size=(16, 16), mines=40)],
+                  "Hard": ["red", lambda: master.switch_frame(MineSweeper, grid_size=(30, 16), mines=99)],
                   "Exit": ["black", lambda: exit()]}
         for level in levels:
             button = tk.Button(self,
@@ -76,11 +82,13 @@ class MineSweeper(tk.Frame):
 
     def __init__(self, master, grid_size, mines):
         tk.Frame.__init__(self, master, padx=30, pady=30, bg="white")
+        self.master = master
         self.cols = grid_size[0]
         self.rows = grid_size[1]
         self.mines = mines
         self.mines_found = 0
         self.ref_grid = np.array([[0 for i in range(self.cols)] for j in range(self.rows)])
+        self.flag_dict = {}
 
         mine_coords = set()
         while len(mine_coords) < self.mines:
@@ -89,8 +97,12 @@ class MineSweeper(tk.Frame):
 
         for y in range(self.rows):
             for x in range(self.cols):
+
+                self.flag_dict[(y, x)] = False
+
                 if (y, x) in mine_coords:
                     self.ref_grid[y][x] = -1
+
         for y in range(self.rows):
             for x in range(self.cols):
                 neighbouring_mines = 0
@@ -135,7 +147,7 @@ class MineSweeper(tk.Frame):
             for x in range(self.cols):
                 cell = tk.Button(self.cell_subframe, text=" ", height=2, width=5)
                 cell.bind(self.left_click, lambda event, y = y, x = x: self.reveal(y, x))
-                cell.bind(self.right_click, self.flag)
+                cell.bind(self.right_click, lambda event, y = y, x = x: self.flag(y, x))
                 cell.grid(row=y, column=x)
 
     def reveal(self, y, x):
@@ -144,9 +156,25 @@ class MineSweeper(tk.Frame):
             print("game lost")
             self.game_lost()
         #   call game won
+        else:
+            cell = tk.Label(self.cell_subframe, text=str(self.ref_grid[y][x]), height=2, width=5)
+            cell.grid(row=y, column=x)
 
-    def flag(self, event):
-        print(f"Flagged at {y} {x}")
+
+    def flag(self, y, x):
+        if self.flag_dict[(y, x)]:
+            print(y, x, "already flagged")
+            cell = tk.Button(self.cell_subframe, text=" ", height=2, width=5)
+            cell.bind(self.left_click, lambda event, y=y, x=x: self.reveal(y, x))
+            cell.bind(self.right_click, lambda event, y=y, x=x: self.flag(y, x))
+            cell.grid(row=y, column=x)
+
+        else:
+            flag = tk.Label(self.cell_subframe, text=">", height=2, width=5)
+            flag.grid(row=y, column=x)
+            self.flag_dict[(y, x)] = True
+            print(y, x, "flagged")
+
 
     def game_lost(self):
         for y in range(self.rows):
@@ -154,6 +182,8 @@ class MineSweeper(tk.Frame):
                 if self.ref_grid[y][x] == -1:
                     mine = tk.Label(self.cell_subframe, text="X", height=2, width=5, bg="red", relief="sunken")
                     mine.grid(row=y, column=x)
+        print(type(self.master))
+        self.master.switch_frame(GameOver, state="lose")
 
     def game_won(self):
         pass
@@ -161,9 +191,21 @@ class MineSweeper(tk.Frame):
 
 class GameOver(tk.Frame):
 
-    def __init__(self, state):
-        tk.Frame.__init__(master)
-        tk.Frame.
+    def __init__(self, master, state):
+        tk.Frame.__init__(self, master)
+        if state == "win":
+            msg = tk.Label(self, text="Congrats you won. Would you like to play again?", height=4, width=10)
+            msg.pack()
+        elif state == "lose":
+            msg = tk.Label(self, text="Unlucky you lost. Would you like to play again?", height=4, width=10)
+            msg.pack()
+        yes = tk.Button(self, text="Yes", height=3, width=5, command=lambda: master.switch_frame(Menu))
+        yes.pack()
+        no = tk.Button(self, text="No", height=3, width=5, command=lambda: exit())
+        no.pack()
+
+
+
 
 main = Window()
 main.mainloop()
