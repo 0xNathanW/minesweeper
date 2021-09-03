@@ -172,7 +172,7 @@ class MineSweeper:
             for x in range(self.cols):
                 if self.user_grid[y][x] == ">" and self.grid[y][x] == "X":
                     successful_flags += 1
-        if successful_flags == self.mine_count:
+        if successful_flags == self.mines:
             self.finished = True
             print("Congrats, you won!!! You're prize is ... absolutely nothing.")
             self.play_again()
