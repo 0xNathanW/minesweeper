@@ -163,6 +163,8 @@ class MineSweeper:
         print("Unlucky pal.")
         self.play_again()
 
+
+    #TODO: Change for change in probability to number of miens
     #   Check for win condition after every move.
     def check_win(self):
         successful_flags = 0
