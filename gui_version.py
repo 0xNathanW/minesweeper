@@ -183,13 +183,11 @@ class MineSweeper(tk.Frame):
 
     #   Continually updates the timer every 1sec.
     def update_timer(self):
-        print("checking time")
         if self.start_time is None:
             self.start_time = time.time()
         end_time = time.time()
         elapsed = math.floor(end_time - self.start_time)
         mins, secs = divmod(elapsed, 60)
-        print(f"{mins:02}:{secs:02}")
         self.timer.config(text=f"{mins:02}:{secs:02}")
         if self.game_state:
             self.after(1000, self.update_timer)
