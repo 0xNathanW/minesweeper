@@ -307,11 +307,11 @@ class GameOver(tk.Frame):
         buttonFont = font.Font(size=26, weight="bold", family="Unispace")
         #   Different messages if game was won or lost.
         if state == "win":
-            msg = tk.Label(self, text=f"Congrats you won!.\n Time completed: {time_}\nPlay again?\n", font=msgFont,
+            msg = tk.Label(self, text=f"Congrats you won!\n Time completed: {time_}\nPlay again?\n", font=msgFont,
                            bg="black", fg="white", padx=50)
             msg.pack()
         elif state == "lose":
-            msg = tk.Label(self, text=f"Unlucky, You lost!.\nTime: {time_}\nPlay again?\n", font=msgFont,
+            msg = tk.Label(self, text=f"Unlucky, You lost!\nTime: {time_}\nPlay again?\n", font=msgFont,
                            bg="black", fg="white", padx=50)
             msg.pack()
         #   Button back to menu frame.
