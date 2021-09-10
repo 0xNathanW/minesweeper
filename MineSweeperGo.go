@@ -6,11 +6,6 @@ import (
 	"time"
 )
 
-func initGrid() [9][9]int {
-	grid := [9][9]int{}
-	return grid
-}
-
 func mineCoords(numMines int) map[[2]int]bool {
 	coords := make(map[[2]int]bool)
 	for n := 0; len(coords) < numMines; n++ {
@@ -23,17 +18,37 @@ func mineCoords(numMines int) map[[2]int]bool {
 			coords[mine] = true
 		}
 	}
-	fmt.Println(coords)
 	return coords
+}
+
+func initReferenceGrid() [9][9]int {
+	grid := [9][9]int{}
+	mines := mineCoords(10)
+	for k := range mines {
+		grid[k[0]][k[1]] = -9
+	}
+	return grid
 }
 
 func displayGrid(grid [9][9]int) {
 	for _, row := range grid {
-		fmt.Println(row)
+		for _, cell := range row {
+			fmt.Printf(" %02d ", cell)
+		}
+		fmt.Print("\n")
 	}
 }
 
+//func getNeighbours(x , y int) []int {
+//	pivot := [3]int{-1, 0, 1}
+//	for i := range pivot {
+//		for j := range pivot {
+//
+//		}
+//	}
+//}
+
 func main() {
-	//displayGrid(initGrid())
-	mineCoords(20)
+	referenceGrid := initReferenceGrid()
+	displayGrid(referenceGrid)
 }
