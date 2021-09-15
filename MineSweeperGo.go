@@ -143,6 +143,32 @@ func flag(coords [2]int, grid map[[2]int]*Cell) {
 	}
 }
 
+func reveal(coords [2]int, grid map[[2]int]*Cell, board Board) {
+	cell := grid[coords]
+	if cell.mine {
+		fmt.Println("Game Lost")
+	} else if !cell.hidden {
+		fmt.Println("Cell already revealed")
+	} else if cell.neighbouringMines == 0 {
+		cell.hidden = false
+		neighbours := getNeighbours(coords, board)
+		hidden_adj := 0
+		for n := range neighbours {
+			nCell := grid[neighbours[n]]
+			if nCell.hidden {
+				hidden_adj ++
+			}
+		}
+		if hidden_adj > 0 {
+			for n := range neighbours {
+				reveal(neighbours[n], grid, board)
+			}
+		}
+	} else {
+		cell.hidden = false
+	}
+}
+
 func main() {
 	board := Board{
 		rows:     9,
@@ -157,7 +183,7 @@ func main() {
 			flag(coords, grid)
 		}
 		if move == "r" {
-			fmt.Println("Revealed: ", coords)
+			reveal(coords, grid, board)
 		}
 	}
 
