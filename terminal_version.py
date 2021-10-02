@@ -27,7 +27,6 @@ class MineSweeper:
         mine_coords = set()
         while len(mine_coords) < self.mines:
             mine_coords.add((random.randint(0, self.rows - 1), random.randint(0, self.cols - 1)))
-        print(mine_coords)
         for y, x in mine_coords:
             self.grid[y][x] = -99
             for i in range(-1, 2):
