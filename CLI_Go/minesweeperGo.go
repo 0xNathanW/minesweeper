@@ -81,6 +81,8 @@ func displayGrid(board Board, grid map[[2]int]*Cell) {
 				fmt.Print(" F ")
 			} else if cell.hidden {
 				fmt.Print(" # ")
+			} else if !cell.hidden && cell.mine {
+				fmt.Print(" X ")
 			} else {
 				fmt.Printf(" %v ", cell.neighbouringMines)
 			}
@@ -146,26 +148,71 @@ func flag(coords [2]int, grid map[[2]int]*Cell) {
 func reveal(coords [2]int, grid map[[2]int]*Cell, board Board) {
 	cell := grid[coords]
 	if cell.mine {
-		fmt.Println("Game Lost")
+		gameLost(grid, board)
 	} else if !cell.hidden {
 		fmt.Println("Cell already revealed")
 	} else if cell.neighbouringMines == 0 {
 		cell.hidden = false
 		neighbours := getNeighbours(coords, board)
-		hidden_adj := 0
+		hiddenAdj := 0
 		for n := range neighbours {
 			nCell := grid[neighbours[n]]
 			if nCell.hidden {
-				hidden_adj ++
+				hiddenAdj ++
 			}
 		}
-		if hidden_adj > 0 {
+		if hiddenAdj > 0 {
 			for n := range neighbours {
 				reveal(neighbours[n], grid, board)
 			}
 		}
 	} else {
 		cell.hidden = false
+	}
+}
+
+func gameLost(grid map[[2]int]*Cell, board Board) {
+	for c := range grid {
+		cell := grid[c]
+		if cell.mine {
+			cell.hidden = false
+		}
+	}
+	fmt.Println("Unlucky you Lost :(")
+	displayGrid(board, grid)
+	time.Sleep(3000)
+	playAgain()
+}
+
+func checkGameWon(grid map[[2]int]*Cell, board Board) {
+	var flaggedMines int
+	for c := range grid {
+		cell := grid[c]
+		if cell.mine && cell.flagged {
+			flaggedMines ++
+		}
+	}
+	if flaggedMines == board.numMines {
+		fmt.Println("Congrats, you Won!! :)")
+		playAgain()
+	}
+}
+
+func playAgain() {
+	fmt.Println("Play Again? (y/n)")
+	var ans string
+	_, err := fmt.Scanln(&ans)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+	switch ans {
+	case "y":
+		main()
+	case "n":
+		os.Exit(0)
+	default:
+		fmt.Println("Invalid answer.")
+		playAgain()
 	}
 }
 
