@@ -208,7 +208,7 @@ class MineSweeper:
 
 #   Retrieve grid-size and probability.
 def query_difficulty():
-    difficulty_to_grid_size = {"easy": ((6, 6), 7), "medium": ((10, 10), 25), "hard": ((18, 18), 97)}
+    difficulty_to_grid_size = {"easy": ((6, 6), 7), "medium": ((10, 10), 12), "hard": ((18, 18), 50)}
     user_choice = input("Choose a difficulty: easy, medium, or hard...").lower()
     if user_choice in difficulty_to_grid_size.keys():
         return difficulty_to_grid_size[user_choice][0], difficulty_to_grid_size[user_choice][1]
