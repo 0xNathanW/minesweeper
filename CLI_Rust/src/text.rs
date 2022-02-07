@@ -1,19 +1,21 @@
 // Text constants to build display.
 
-pub const FLAG: &str = "F";
-pub const MINE: &str = "X";
+pub const FLAG: &[u8] = "F".as_bytes();
+pub const MINE: &[u8] = "X".as_bytes();
+pub const HIDDEN: &[u8] = "#".as_bytes();
+pub const SPACE: &[u8] = " ".as_bytes();
 
-pub const TOP_LEFT: &str = "┌";
-pub const TOP_RIGHT: &str = "┐";
-pub const BOTTOM_LEFT: &str = "└";
-pub const BOTTOM_RIGHT: &str = "┘";
-pub const VERTICAL: &str = "│";
-pub const HORIZONTAL: &str = "─";
-pub const TOP_TEE: &str = "┬";
-pub const BOTTOM_TEE: &str = "┴";
-pub const LEFT_TEE: &str = "├";
-pub const RIGHT_TEE: &str = "┤";
-pub const CROSS: &str = "┼";
+pub const TOP_LEFT: &[u8] =" ┌".as_bytes();
+pub const TOP_RIGHT: &[u8] = "┐".as_bytes();
+pub const BOTTOM_LEFT: &[u8] = " └".as_bytes();
+pub const BOTTOM_RIGHT: &[u8] = "┘".as_bytes();
+pub const VERTICAL: &[u8] = " │".as_bytes();
+pub const HORIZONTAL: &[u8] = "─".as_bytes();
+pub const TOP_TEE: &[u8] = "┬".as_bytes();
+pub const BOTTOM_TEE: &[u8] = "┴".as_bytes();
+pub const LEFT_TEE: &[u8] = "├".as_bytes();
+pub const RIGHT_TEE: &[u8] = "┤".as_bytes();
+pub const CROSS: &[u8] = "┼".as_bytes();
 
 pub const MENU: &str = "
 ╔═══════════════════════════════╗
